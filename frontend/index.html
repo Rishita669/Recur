@@ -1,0 +1,944 @@
+<!-- @format -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Incident Response Agent</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@400;700;800&display=swap");
+
+      :root {
+        --bg: #ffffff;
+        --card: #ffffff;
+        --border: #000000;
+        --text: #000000;
+        --muted: #555555;
+        --shadow: 6px 6px 0px #000000;
+        --shadow-hover: 2px 2px 0px #000000;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Space Grotesk", sans-serif;
+        min-height: 100vh;
+        border: 12px solid var(--border);
+        overflow-x: hidden;
+      }
+
+      /* TOP NAV */
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 2rem;
+        border-bottom: 4px solid var(--border);
+        background: var(--bg);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 800;
+        font-size: 1.25rem;
+        text-transform: uppercase;
+        letter-spacing: -0.05em;
+      }
+
+      .logo-dot {
+        width: 16px;
+        height: 16px;
+        background: var(--text);
+        border: 3px solid var(--border);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          border-radius: 0;
+        }
+        50% {
+          transform: scale(1.2);
+          border-radius: 50%;
+        }
+      }
+
+      .status-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        border: 3px solid var(--border);
+        padding: 0.35rem 0.85rem;
+        box-shadow: 3px 3px 0px var(--border);
+        text-transform: uppercase;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        background: var(--text);
+        animation: pulse 1.5s infinite;
+      }
+
+      /* HERO */
+      .hero {
+        text-align: center;
+        padding: 5rem 2rem 4rem;
+        background: repeating-linear-gradient(
+          45deg,
+          #ffffff,
+          #ffffff 10px,
+          #f2f2f2 10px,
+          #f2f2f2 20px
+        );
+        border-bottom: 4px solid var(--border);
+      }
+
+      .hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: -0.05em;
+        text-shadow: 4px 4px 0px #fff, 6px 6px 0px #000;
+      }
+
+      .hero h1 span {
+        background: #000;
+        color: #fff;
+        padding: 0 1rem;
+        display: inline-block;
+        transform: rotate(-2deg);
+        box-shadow: 6px 6px 0px #fff, 10px 10px 0px #000;
+        text-shadow: none;
+        border: 3px solid #000;
+      }
+
+      .hero p {
+        color: var(--text);
+        font-size: 1.15rem;
+        max-width: 650px;
+        margin: 0 auto 3rem;
+        font-weight: 700;
+        background: #fff;
+        padding: 1.25rem;
+        border: 4px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      /* STATS */
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 2.5rem;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        text-align: center;
+        background: #fff;
+        border: 4px solid var(--border);
+        padding: 1.5rem 2.5rem;
+        box-shadow: 8px 8px 0px #000;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .stat:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 12px 12px 0px #000;
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--text);
+      }
+
+      .stat-label {
+        font-size: 0.95rem;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 800;
+        margin-top: 0.75rem;
+        border-top: 3px solid var(--border);
+        padding-top: 0.75rem;
+      }
+
+      /* MAIN LAYOUT */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+        body {
+          border-width: 6px;
+        }
+        .stat {
+          width: 100%;
+        }
+      }
+
+      .full-width {
+        grid-column: 1 / -1;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--card);
+        border: 4px solid var(--border);
+        padding: 2.5rem;
+        box-shadow: 10px 10px 0px #000;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="%23000" opacity="0.05"/></svg>');
+        pointer-events: none;
+      }
+
+      .card:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 14px 14px 0px #000;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 4px solid var(--border);
+        background: #fff;
+        position: relative;
+        z-index: 2;
+      }
+
+      .card-icon {
+        width: 60px;
+        height: 60px;
+        border: 4px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        background: #fff;
+        box-shadow: 4px 4px 0px #000;
+        transition: transform 0.2s;
+      }
+      
+      .card:hover .card-icon {
+        transform: rotate(-10deg) scale(1.1);
+      }
+
+      .card-title {
+        font-weight: 800;
+        font-size: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+      }
+
+      .card-subtitle {
+        font-size: 1rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      /* FORM ELEMENTS */
+      textarea {
+        width: 100%;
+        background: #fff;
+        border: 4px solid var(--border);
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 1.25rem;
+        resize: vertical;
+        min-height: 140px;
+        transition: all 0.2s;
+        outline: none;
+        box-shadow: inset 6px 6px 0px rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 2;
+      }
+
+      textarea:focus {
+        box-shadow: inset 0px 0px 0px rgba(0,0,0,0), 6px 6px 0px #000;
+        transform: translate(-3px, -3px);
+      }
+      textarea::placeholder {
+        color: #888;
+        font-weight: 600;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.25rem 2rem;
+        font-weight: 800;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 4px solid var(--border);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        justify-content: center;
+        margin-top: 1.5rem;
+        background: #fff;
+        color: #000;
+        box-shadow: 6px 6px 0px #000;
+        position: relative;
+        z-index: 2;
+        letter-spacing: 0.05em;
+      }
+
+      .btn:hover {
+        transform: translate(2px, 2px);
+        box-shadow: 4px 4px 0px #000;
+        background: #000;
+        color: #fff;
+      }
+
+      .btn:active {
+        transform: translate(6px, 6px);
+        box-shadow: 0px 0px 0px #000;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: translate(6px, 6px);
+        box-shadow: 0px 0px 0px #000;
+        background: #e0e0e0;
+        color: #888;
+      }
+
+      /* OUTPUT BOX */
+      .output-box {
+        background: #f8f8f8;
+        border: 4px solid var(--border);
+        padding: 1.5rem;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.6;
+        min-height: 120px;
+        color: #000;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 350px;
+        overflow-y: auto;
+        box-shadow: inset 4px 4px 0px rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 2;
+      }
+
+      .output-placeholder {
+        color: var(--muted);
+        font-style: normal;
+      }
+
+      /* INCIDENT FEED */
+      .incident-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-height: 450px;
+        overflow-y: auto;
+        padding-right: 1rem;
+        position: relative;
+        z-index: 2;
+      }
+
+      .incident-item {
+        background: #fff;
+        border: 4px solid var(--border);
+        padding: 1.5rem;
+        box-shadow: 6px 6px 0px #000;
+        transition: transform 0.2s;
+      }
+
+      .incident-item:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 9px 9px 0px #000;
+      }
+
+      .incident-item.critical, .incident-item.high, .incident-item.medium {
+        border-left-width: 12px;
+        border-left-color: #000;
+      }
+
+      .incident-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+      }
+
+      .incident-meta {
+        display: flex;
+        gap: 1.25rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+        font-weight: 800;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .badge {
+        padding: 0.35rem 1rem;
+        border: 3px solid var(--border);
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-family: "JetBrains Mono", monospace;
+        box-shadow: 3px 3px 0px #000;
+      }
+
+      .badge-critical, .badge-high, .badge-medium {
+        background: #fff;
+        color: #000;
+      }
+
+      /* LOADING SPINNER */
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 4px solid #000;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      .btn:hover .spinner {
+        border-color: #fff;
+        border-top-color: transparent;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* MEMORY BANK */
+      .memory-counter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border: 4px solid var(--border);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 6px 6px 0px #000;
+        position: relative;
+        z-index: 2;
+      }
+
+      .memory-count {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+      }
+
+      .memory-label {
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-top: 0.75rem;
+        letter-spacing: 0.05em;
+      }
+
+      /* TOAST */
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #fff;
+        border: 4px solid #000;
+        color: #000;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        font-family: "Space Grotesk", sans-serif;
+        transform: translateY(150px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 999;
+        box-shadow: 8px 8px 0px #000;
+        text-transform: uppercase;
+      }
+
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 14px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #fff;
+        border-left: 4px solid var(--border);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #000;
+        border: 3px solid #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <div class="logo">
+        <div class="logo-dot"></div>
+        INCIDENT RESPONSE AGENT
+      </div>
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        HINDSIGHT MEMORY ACTIVE
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>Production Down? <span>AI Remembers.</span></h1>
+      <p>
+        An SRE agent powered by Hindsight memory that recalls past incidents and
+        gets smarter with every outage.
+      </p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="memoryCount">0</div>
+          <div class="stat-label">Memories Stored</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="incidentCount">0</div>
+          <div class="stat-label">Incidents Diagnosed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">3</div>
+          <div class="stat-label">Memory Operations</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="container">
+      <!-- SEED MEMORY -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🧠</div>
+          <div>
+            <div class="card-title">Seed Memory Bank</div>
+            <div class="card-subtitle">Load past incidents into Hindsight</div>
+          </div>
+        </div>
+        <div class="memory-counter">
+          <div>
+            <div class="memory-count" id="seedCount">10</div>
+            <div class="memory-label">incidents ready to load</div>
+          </div>
+          <div style="font-size: 3rem">📂</div>
+        </div>
+        <button class="btn" id="seedBtn" onclick="seedMemory()">
+          🧠 Seed Incidents into Memory
+        </button>
+        <div
+          class="output-box"
+          id="seedOutput"
+          style="margin-top: 1.5rem; min-height: 80px"
+        >
+          <span class="output-placeholder"
+            >Click to load 10 past incidents into Hindsight memory...</span
+          >
+        </div>
+      </div>
+
+      <!-- RECALL -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔍</div>
+          <div>
+            <div class="card-title">Search Memory</div>
+            <div class="card-subtitle">Recall similar past incidents</div>
+          </div>
+        </div>
+        <textarea
+          id="recallInput"
+          placeholder="e.g. database connection timeout..."
+        ></textarea>
+        <button class="btn" onclick="recallMemory()">
+          🔍 Search Past Incidents
+        </button>
+        <div class="output-box" id="recallOutput" style="margin-top: 1.5rem">
+          <span class="output-placeholder"
+            >Similar past incidents will appear here...</span
+          >
+        </div>
+      </div>
+
+      <!-- DIAGNOSE -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div class="card-icon">🚨</div>
+          <div>
+            <div class="card-title">Diagnose Incident</div>
+            <div class="card-subtitle">
+              AI-powered diagnosis using Hindsight memory
+            </div>
+          </div>
+        </div>
+        <textarea
+          id="diagnoseInput"
+          placeholder="Describe your incident here...&#10;&#10;e.g. Our Kubernetes pods for the payment service are all showing CrashLoopBackOff status after a config update 30 minutes ago..."
+          style="min-height: 180px"
+        ></textarea>
+        <button class="btn" onclick="diagnoseIncident()">
+          🚨 Diagnose with Memory
+        </button>
+        <div
+          class="output-box"
+          id="diagnoseOutput"
+          style="margin-top: 1.5rem; min-height: 200px"
+        >
+          <span class="output-placeholder"
+            >Your AI-powered diagnosis will appear here... The agent will: 1.
+            recall() → find similar past incidents 2. analyze → generate
+            targeted diagnosis 3. retain() → store this incident for future
+            use</span
+          >
+        </div>
+      </div>
+
+      <!-- PATTERNS -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div class="card-icon">📊</div>
+          <div>
+            <div class="card-title">Reflect — Pattern Insights</div>
+            <div class="card-subtitle">
+              Synthesize patterns across all past incidents
+            </div>
+          </div>
+        </div>
+        <button
+          class="btn"
+          style="max-width: 350px"
+          onclick="getPatterns()"
+        >
+          📊 Generate Pattern Insights
+        </button>
+        <div
+          class="output-box"
+          id="patternsOutput"
+          style="margin-top: 1.5rem; min-height: 180px"
+        >
+          <span class="output-placeholder"
+            >Click to reflect on all past incidents and surface recurring
+            patterns...</span
+          >
+        </div>
+      </div>
+
+      <!-- INCIDENT FEED -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div class="card-icon">📋</div>
+          <div>
+            <div class="card-title">Past Incident Feed</div>
+            <div class="card-subtitle">Knowledge base loaded into memory</div>
+          </div>
+        </div>
+        <div class="incident-list" id="incidentFeed">
+          <div
+            style="
+              color: var(--muted);
+              font-size: 1.1rem;
+              font-weight: 700;
+              text-align: center;
+              padding: 3rem;
+              border: 4px dashed var(--border);
+            "
+          >
+            SEED MEMORY TO SEE INCIDENT FEED...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const API = "http://localhost:8000";
+      let diagnosedCount = 0;
+
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      function setOutput(id, text, isError) {
+        const el = document.getElementById(id);
+        el.style.color = isError ? "#fff" : "#000";
+        el.style.backgroundColor = isError ? "#000" : "#f8f8f8";
+        el.textContent = text;
+      }
+
+      function setLoading(btnId, loading) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.innerHTML =
+          loading ?
+            '<span class="spinner"></span> PROCESSING...'
+          : btn.dataset.original || btn.innerHTML;
+      }
+
+      const incidents = [
+        {
+          id: "INC001",
+          title: "Postgres DB connection timeout",
+          severity: "critical",
+          tags: ["database", "postgres"],
+        },
+        {
+          id: "INC002",
+          title: "High CPU on API server",
+          severity: "high",
+          tags: ["cpu", "api"],
+        },
+        {
+          id: "INC003",
+          title: "Redis cache memory full",
+          severity: "high",
+          tags: ["redis", "cache"],
+        },
+        {
+          id: "INC004",
+          title: "Kubernetes pod crash loop",
+          severity: "critical",
+          tags: ["kubernetes", "k8s"],
+        },
+        {
+          id: "INC005",
+          title: "SSL certificate expired",
+          severity: "critical",
+          tags: ["ssl", "nginx"],
+        },
+        {
+          id: "INC006",
+          title: "Disk space full on log server",
+          severity: "medium",
+          tags: ["disk", "logging"],
+        },
+        {
+          id: "INC007",
+          title: "S3 bucket access denied",
+          severity: "high",
+          tags: ["aws", "s3"],
+        },
+        {
+          id: "INC008",
+          title: "API rate limit third-party",
+          severity: "medium",
+          tags: ["api", "rate-limit"],
+        },
+        {
+          id: "INC009",
+          title: "Docker image pull failing",
+          severity: "high",
+          tags: ["docker", "cicd"],
+        },
+        {
+          id: "INC010",
+          title: "Memory leak in Node.js",
+          severity: "high",
+          tags: ["nodejs", "memory"],
+        },
+      ];
+
+      function renderIncidentFeed() {
+        const feed = document.getElementById("incidentFeed");
+        feed.innerHTML = incidents
+          .map(
+            (inc) => `
+      <div class="incident-item ${inc.severity}">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 0.5rem">
+          <div class="incident-title">${inc.title}</div>
+          <span class="badge badge-${inc.severity}">${inc.severity}</span>
+        </div>
+        <div class="incident-meta">
+          <span>${inc.id}</span>
+          <span>${inc.tags.join(" · ")}</span>
+        </div>
+      </div>
+    `,
+          )
+          .join("");
+      }
+
+      async function seedMemory() {
+        const btn = document.getElementById("seedBtn");
+        if (!btn.dataset.original) btn.dataset.original = btn.innerHTML;
+        setLoading("seedBtn", true);
+        setOutput(
+          "seedOutput",
+          "CONNECTING TO HINDSIGHT CLOUD AND SEEDING 10 INCIDENTS...",
+        );
+
+        try {
+          const res = await fetch(`${API}/seed`, { method: "POST" });
+          const data = await res.json();
+          setOutput(
+            "seedOutput",
+            "✅ ALL 10 INCIDENTS SEEDED INTO HINDSIGHT MEMORY!\n\n" +
+              incidents.map((i) => `✅ ${i.id}: ${i.title}`).join("\n"),
+          );
+          document.getElementById("memoryCount").textContent = "10+";
+          renderIncidentFeed();
+          showToast("✅ MEMORY BANK SEEDED SUCCESSFULLY!");
+        } catch (e) {
+          setOutput(
+            "seedOutput",
+            "❌ COULD NOT CONNECT TO API.\nMAKE SURE FASTAPI IS RUNNING:\n\ncd api\nuvicorn main:app --reload --port 8000",
+            true,
+          );
+        }
+
+        setLoading("seedBtn", false);
+        btn.innerHTML = "✅ MEMORY SEEDED — SEED AGAIN";
+      }
+
+      async function recallMemory() {
+        const query = document.getElementById("recallInput").value.trim();
+        if (!query) {
+          showToast("⚠️ ENTER A SEARCH QUERY FIRST");
+          return;
+        }
+        setOutput("recallOutput", "🔍 SEARCHING HINDSIGHT MEMORY...");
+
+        try {
+          const res = await fetch(`${API}/recall`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+          });
+          const data = await res.json();
+          setOutput(
+            "recallOutput",
+            data.memories || "NO SIMILAR INCIDENTS FOUND.",
+          );
+          showToast("🔍 MEMORY RECALL COMPLETE!");
+        } catch (e) {
+          setOutput(
+            "recallOutput",
+            "❌ API NOT REACHABLE. START FASTAPI FIRST.",
+            true,
+          );
+        }
+      }
+
+      async function diagnoseIncident() {
+        const desc = document.getElementById("diagnoseInput").value.trim();
+        if (!desc) {
+          showToast("⚠️ DESCRIBE THE INCIDENT FIRST");
+          return;
+        }
+        setOutput(
+          "diagnoseOutput",
+          "🔍 STEP 1: RECALLING SIMILAR PAST INCIDENTS FROM MEMORY...\n⏳ PLEASE WAIT...",
+        );
+
+        try {
+          const res = await fetch(`${API}/diagnose`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ description: desc }),
+          });
+          const data = await res.json();
+          diagnosedCount++;
+          document.getElementById("incidentCount").textContent = diagnosedCount;
+          setOutput(
+            "diagnoseOutput",
+            "📋 DIAGNOSIS REPORT\n" + "─".repeat(40) + "\n\n" + data.diagnosis,
+          );
+          showToast("✅ DIAGNOSIS COMPLETE — STORED IN MEMORY!");
+        } catch (e) {
+          setOutput(
+            "diagnoseOutput",
+            "❌ API NOT REACHABLE. START FASTAPI FIRST:\n\ncd api\nuvicorn main:app --reload --port 8000",
+            true,
+          );
+        }
+      }
+
+      async function getPatterns() {
+        setOutput(
+          "patternsOutput",
+          "🧠 REFLECTING ON ALL PAST INCIDENTS...\n⏳ THIS MAY TAKE 15-30 SECONDS...",
+        );
+
+        try {
+          const res = await fetch(`${API}/patterns`);
+          const data = await res.json();
+          setOutput(
+            "patternsOutput",
+            "📊 PATTERN INSIGHTS\n" + "─".repeat(40) + "\n\n" + data.patterns,
+          );
+          showToast("📊 PATTERN ANALYSIS COMPLETE!");
+        } catch (e) {
+          setOutput(
+            "patternsOutput",
+            "❌ API NOT REACHABLE. START FASTAPI FIRST.",
+            true,
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
