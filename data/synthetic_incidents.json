@@ -1,0 +1,102 @@
+[
+  {
+    "id": "INC001",
+    "title": "Postgres DB connection timeout",
+    "description": "Database connections timing out, API returning 503 errors",
+    "severity": "critical",
+    "root_cause": "Max connection limit reached due to connection pool misconfiguration",
+    "resolution": "Increased max_connections in postgresql.conf from 100 to 300, restarted service",
+    "duration_minutes": 23,
+    "tags": ["database", "postgres", "timeout"]
+  },
+  {
+    "id": "INC002",
+    "title": "High CPU on API server",
+    "description": "API server CPU at 98%, requests dropping",
+    "severity": "high",
+    "root_cause": "Infinite loop in data processing job triggered by malformed input",
+    "resolution": "Killed the rogue process, added input validation, redeployed",
+    "duration_minutes": 14,
+    "tags": ["cpu", "api", "processing"]
+  },
+  {
+    "id": "INC003",
+    "title": "Redis cache memory full",
+    "description": "Redis out of memory, cache writes failing silently",
+    "severity": "high",
+    "root_cause": "TTL not set on session keys, memory filled over 48 hours",
+    "resolution": "Flushed expired keys, set default TTL of 3600s on all session keys",
+    "duration_minutes": 31,
+    "tags": ["redis", "cache", "memory"]
+  },
+  {
+    "id": "INC004",
+    "title": "Kubernetes pod crash loop",
+    "description": "Payment service pods in CrashLoopBackOff",
+    "severity": "critical",
+    "root_cause": "Missing environment variable PAYMENT_API_KEY after config map update",
+    "resolution": "Added missing env var to config map, rolled out new deployment",
+    "duration_minutes": 18,
+    "tags": ["kubernetes", "k8s", "deployment", "config"]
+  },
+  {
+    "id": "INC005",
+    "title": "SSL certificate expired",
+    "description": "Users getting SSL error on main domain, site unreachable",
+    "severity": "critical",
+    "root_cause": "Auto-renewal cron job failed silently 30 days ago",
+    "resolution": "Manually renewed cert via certbot, fixed cron job, added expiry monitoring",
+    "duration_minutes": 45,
+    "tags": ["ssl", "certificate", "nginx"]
+  },
+  {
+    "id": "INC006",
+    "title": "Disk space full on log server",
+    "description": "Log ingestion stopped, monitoring alerts not firing",
+    "severity": "medium",
+    "root_cause": "Log rotation policy not applied to new microservices added last sprint",
+    "resolution": "Cleared old logs, applied logrotate config to all services",
+    "duration_minutes": 20,
+    "tags": ["disk", "logging", "monitoring"]
+  },
+  {
+    "id": "INC007",
+    "title": "S3 bucket access denied",
+    "description": "File upload feature broken, users getting 403 errors",
+    "severity": "high",
+    "root_cause": "IAM role policy expired after 90-day rotation, not updated",
+    "resolution": "Updated IAM role with new policy, redeployed Lambda functions",
+    "duration_minutes": 27,
+    "tags": ["aws", "s3", "iam", "permissions"]
+  },
+  {
+    "id": "INC008",
+    "title": "API rate limit hitting third-party service",
+    "description": "Email notifications stopped sending",
+    "severity": "medium",
+    "root_cause": "Bulk email job not respecting rate limits, exhausted daily quota",
+    "resolution": "Added rate limiting with token bucket algorithm, scheduled bulk jobs off-peak",
+    "duration_minutes": 35,
+    "tags": ["api", "rate-limit", "email", "notifications"]
+  },
+  {
+    "id": "INC009",
+    "title": "Docker image pull failing in CI/CD",
+    "description": "All deployments failing with image pull error",
+    "severity": "high",
+    "root_cause": "Docker Hub rate limit hit due to unauthenticated pulls from CI runners",
+    "resolution": "Added Docker Hub credentials to CI secrets, switched to authenticated pulls",
+    "duration_minutes": 12,
+    "tags": ["docker", "cicd", "deployment"]
+  },
+  {
+    "id": "INC010",
+    "title": "Memory leak in Node.js service",
+    "description": "User auth service memory growing until OOM kill every 6 hours",
+    "severity": "high",
+    "root_cause": "Event listeners not removed on WebSocket disconnect, accumulating over time",
+    "resolution": "Added proper cleanup in disconnect handler, memory stable after fix",
+    "duration_minutes": 90,
+    "tags": ["nodejs", "memory", "websocket", "leak"]
+  }
+]
