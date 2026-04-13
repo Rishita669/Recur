@@ -7,938 +7,913 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Incident Response Agent</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@400;700;800&display=swap");
-
-      :root {
-        --bg: #ffffff;
-        --card: #ffffff;
-        --border: #000000;
-        --text: #000000;
-        --muted: #555555;
-        --shadow: 6px 6px 0px #000000;
-        --shadow-hover: 2px 2px 0px #000000;
-      }
-
       * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
       }
 
       body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: "Space Grotesk", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
         min-height: 100vh;
-        border: 12px solid var(--border);
-        overflow-x: hidden;
       }
 
-      /* TOP NAV */
-      nav {
+      /* ── Header ── */
+      .header {
+        background: #1a1d27;
+        border-bottom: 1px solid #2d3148;
+        padding: 16px 32px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 1.25rem 2rem;
-        border-bottom: 4px solid var(--border);
-        background: var(--bg);
-        position: sticky;
-        top: 0;
-        z-index: 100;
       }
-
-      .logo {
+      .header-left {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        font-family: "JetBrains Mono", monospace;
-        font-weight: 800;
-        font-size: 1.25rem;
-        text-transform: uppercase;
-        letter-spacing: -0.05em;
+        gap: 12px;
       }
-
-      .logo-dot {
-        width: 16px;
-        height: 16px;
-        background: var(--text);
-        border: 3px solid var(--border);
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% {
-          transform: scale(1);
-          border-radius: 0;
-        }
-        50% {
-          transform: scale(1.2);
-          border-radius: 50%;
-        }
-      }
-
-      .status-bar {
+      .header-logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #6c3de0;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        font-size: 0.95rem;
-        font-weight: 800;
-        color: var(--text);
-        font-family: "JetBrains Mono", monospace;
-        border: 3px solid var(--border);
-        padding: 0.35rem 0.85rem;
-        box-shadow: 3px 3px 0px var(--border);
-        text-transform: uppercase;
+        justify-content: center;
+        font-size: 18px;
       }
-
-      .status-dot {
-        width: 12px;
-        height: 12px;
-        background: var(--text);
-        animation: pulse 1.5s infinite;
-      }
-
-      /* HERO */
-      .hero {
-        text-align: center;
-        padding: 5rem 2rem 4rem;
-        background: repeating-linear-gradient(
-          45deg,
-          #ffffff,
-          #ffffff 10px,
-          #f2f2f2 10px,
-          #f2f2f2 20px
-        );
-        border-bottom: 4px solid var(--border);
-      }
-
-      .hero h1 {
-        font-size: 4rem;
-        font-weight: 800;
-        line-height: 1.1;
-        margin-bottom: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: -0.05em;
-        text-shadow: 4px 4px 0px #fff, 6px 6px 0px #000;
-      }
-
-      .hero h1 span {
-        background: #000;
+      .header-title {
+        font-size: 18px;
+        font-weight: 600;
         color: #fff;
-        padding: 0 1rem;
-        display: inline-block;
-        transform: rotate(-2deg);
-        box-shadow: 6px 6px 0px #fff, 10px 10px 0px #000;
-        text-shadow: none;
-        border: 3px solid #000;
       }
-
-      .hero p {
-        color: var(--text);
-        font-size: 1.15rem;
-        max-width: 650px;
-        margin: 0 auto 3rem;
-        font-weight: 700;
-        background: #fff;
-        padding: 1.25rem;
-        border: 4px solid var(--border);
-        box-shadow: var(--shadow);
+      .header-sub {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 1px;
       }
-
-      /* STATS */
-      .stats {
+      .api-status {
         display: flex;
-        justify-content: center;
-        gap: 2.5rem;
-        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+        transition: background 0.3s;
+      }
+      .status-dot.online {
+        background: #22c55e;
       }
 
+      /* ── Stats bar ── */
+      .stats-bar {
+        background: #1a1d27;
+        border-bottom: 1px solid #2d3148;
+        padding: 12px 32px;
+        display: flex;
+        gap: 24px;
+      }
       .stat {
-        text-align: center;
-        background: #fff;
-        border: 4px solid var(--border);
-        padding: 1.5rem 2.5rem;
-        box-shadow: 8px 8px 0px #000;
-        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
-
-      .stat:hover {
-        transform: translate(-3px, -3px);
-        box-shadow: 12px 12px 0px #000;
-      }
-
-      .stat-number {
-        font-size: 3rem;
-        font-weight: 800;
-        font-family: "JetBrains Mono", monospace;
-        color: var(--text);
-      }
-
       .stat-label {
-        font-size: 0.95rem;
-        color: var(--text);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 800;
-        margin-top: 0.75rem;
-        border-top: 3px solid var(--border);
-        padding-top: 0.75rem;
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .stat-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+      .badge-p1 {
+        background: #450a0a;
+        color: #fca5a5;
+      }
+      .badge-p2 {
+        background: #451a03;
+        color: #fcd34d;
+      }
+      .badge-p3 {
+        background: #052e16;
+        color: #86efac;
+      }
+      .badge-neutral {
+        background: #1e293b;
+        color: #94a3b8;
       }
 
-      /* MAIN LAYOUT */
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 4rem 2rem;
+      /* ── Layout ── */
+      .layout {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
+        grid-template-columns: 340px 1fr;
+        height: calc(100vh - 109px);
       }
 
-      @media (max-width: 768px) {
-        .container {
-          grid-template-columns: 1fr;
-        }
-        .hero h1 {
-          font-size: 2.5rem;
-        }
-        body {
-          border-width: 6px;
-        }
-        .stat {
-          width: 100%;
-        }
-      }
-
-      .full-width {
-        grid-column: 1 / -1;
-      }
-
-      /* CARDS */
-      .card {
-        background: var(--card);
-        border: 4px solid var(--border);
-        padding: 2.5rem;
-        box-shadow: 10px 10px 0px #000;
-        transition: transform 0.2s, box-shadow 0.2s;
-        position: relative;
-      }
-
-      .card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="%23000" opacity="0.05"/></svg>');
-        pointer-events: none;
-      }
-
-      .card:hover {
-        transform: translate(-4px, -4px);
-        box-shadow: 14px 14px 0px #000;
-      }
-
-      .card-header {
+      /* ── Sidebar ── */
+      .sidebar {
+        background: #1a1d27;
+        border-right: 1px solid #2d3148;
         display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 4px solid var(--border);
-        background: #fff;
-        position: relative;
-        z-index: 2;
+        flex-direction: column;
+        overflow: hidden;
       }
-
-      .card-icon {
-        width: 60px;
-        height: 60px;
-        border: 4px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        background: #fff;
-        box-shadow: 4px 4px 0px #000;
-        transition: transform 0.2s;
-      }
-      
-      .card:hover .card-icon {
-        transform: rotate(-10deg) scale(1.1);
-      }
-
-      .card-title {
-        font-weight: 800;
-        font-size: 1.5rem;
+      .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid #2d3148;
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        letter-spacing: -0.03em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .refresh-btn {
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .refresh-btn:hover {
+        color: #e2e8f0;
+        background: #2d3148;
+      }
+      .history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      .history-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .history-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .history-list::-webkit-scrollbar-thumb {
+        background: #2d3148;
+        border-radius: 2px;
       }
 
-      .card-subtitle {
-        font-size: 1rem;
-        color: var(--muted);
-        font-weight: 700;
+      .history-item {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background 0.15s;
+      }
+      .history-item:hover {
+        background: #252836;
+        border-color: #2d3148;
+      }
+      .history-item.active {
+        background: #252836;
+        border-color: #6c3de0;
+      }
+      .history-item-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .history-id {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c3de0;
+      }
+      .history-time {
+        font-size: 11px;
+        color: #4b5563;
+        margin-left: auto;
+      }
+      .history-desc {
+        font-size: 12px;
+        color: #9ca3af;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .history-runbook {
+        font-size: 11px;
+        color: #4b5563;
+        margin-top: 4px;
       }
 
-      /* FORM ELEMENTS */
+      .empty-history {
+        padding: 32px 16px;
+        text-align: center;
+        color: #4b5563;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* ── Main panel ── */
+      .main {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ── Input area ── */
+      .input-area {
+        padding: 20px 24px;
+        border-bottom: 1px solid #2d3148;
+        background: #13151f;
+      }
+      .input-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        letter-spacing: 0.03em;
+      }
+      .input-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+      }
       textarea {
-        width: 100%;
-        background: #fff;
-        border: 4px solid var(--border);
-        color: var(--text);
-        font-family: "JetBrains Mono", monospace;
-        font-size: 1rem;
-        font-weight: 700;
-        padding: 1.25rem;
-        resize: vertical;
-        min-height: 140px;
-        transition: all 0.2s;
+        flex: 1;
+        background: #1a1d27;
+        border: 1px solid #2d3148;
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-size: 14px;
+        font-family: inherit;
+        padding: 12px 14px;
+        resize: none;
         outline: none;
-        box-shadow: inset 6px 6px 0px rgba(0,0,0,0.05);
-        position: relative;
-        z-index: 2;
+        line-height: 1.5;
+        transition: border-color 0.2s;
       }
-
       textarea:focus {
-        box-shadow: inset 0px 0px 0px rgba(0,0,0,0), 6px 6px 0px #000;
-        transform: translate(-3px, -3px);
+        border-color: #6c3de0;
       }
       textarea::placeholder {
-        color: #888;
-        font-weight: 600;
+        color: #4b5563;
       }
 
-      /* BUTTONS */
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1.25rem 2rem;
-        font-weight: 800;
-        font-size: 1.1rem;
-        text-transform: uppercase;
+      .btn-diagnose {
+        background: #6c3de0;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0 20px;
+        height: 80px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
-        border: 4px solid var(--border);
-        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 100%;
+        transition:
+          background 0.2s,
+          opacity 0.2s;
+        white-space: nowrap;
+        min-width: 110px;
+      }
+      .btn-diagnose:hover {
+        background: #7c4de8;
+      }
+      .btn-diagnose:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-seed {
+        background: #1e293b;
+        color: #94a3b8;
+        border: 1px solid #2d3148;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 8px;
+      }
+      .btn-seed:hover {
+        background: #2d3148;
+        color: #e2e8f0;
+      }
+      .btn-seed:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ── Result area ── */
+      .result-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+      }
+      .result-area::-webkit-scrollbar {
+        width: 4px;
+      }
+      .result-area::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .result-area::-webkit-scrollbar-thumb {
+        background: #2d3148;
+        border-radius: 2px;
+      }
+
+      /* ── Welcome screen ── */
+      .welcome {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
-        margin-top: 1.5rem;
-        background: #fff;
-        color: #000;
-        box-shadow: 6px 6px 0px #000;
-        position: relative;
-        z-index: 2;
+        height: 100%;
+        text-align: center;
+        color: #4b5563;
+      }
+      .welcome-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+      .welcome h2 {
+        font-size: 20px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+      .welcome p {
+        font-size: 14px;
+        line-height: 1.6;
+        max-width: 360px;
+      }
+
+      /* ── Diagnosis card ── */
+      .diagnosis-card {
+        background: #1a1d27;
+        border: 1px solid #2d3148;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .diagnosis-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #2d3148;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .diagnosis-header.p1 {
+        border-left: 4px solid #ef4444;
+      }
+      .diagnosis-header.p2 {
+        border-left: 4px solid #f59e0b;
+      }
+      .diagnosis-header.p3 {
+        border-left: 4px solid #22c55e;
+      }
+
+      .diag-id {
+        font-size: 13px;
+        font-weight: 700;
+        color: #a78bfa;
+      }
+      .diag-severity-label {
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .diag-time {
+        font-size: 12px;
+        color: #4b5563;
+        margin-left: auto;
+      }
+
+      .diagnosis-incident {
+        padding: 14px 20px;
+        background: #13151f;
+        border-bottom: 1px solid #2d3148;
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.5;
+      }
+      .diagnosis-incident span {
+        font-weight: 600;
+        color: #6b7280;
+        display: block;
+        margin-bottom: 4px;
+        font-size: 11px;
+        text-transform: uppercase;
         letter-spacing: 0.05em;
       }
 
-      .btn:hover {
-        transform: translate(2px, 2px);
-        box-shadow: 4px 4px 0px #000;
-        background: #000;
-        color: #fff;
-      }
-
-      .btn:active {
-        transform: translate(6px, 6px);
-        box-shadow: 0px 0px 0px #000;
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: translate(6px, 6px);
-        box-shadow: 0px 0px 0px #000;
-        background: #e0e0e0;
-        color: #888;
-      }
-
-      /* OUTPUT BOX */
-      .output-box {
-        background: #f8f8f8;
-        border: 4px solid var(--border);
-        padding: 1.5rem;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 1rem;
-        font-weight: 700;
-        line-height: 1.6;
-        min-height: 120px;
-        color: #000;
+      .diagnosis-body {
+        padding: 20px;
+        font-size: 14px;
+        color: #cbd5e1;
+        line-height: 1.8;
         white-space: pre-wrap;
-        word-break: break-word;
-        max-height: 350px;
-        overflow-y: auto;
-        box-shadow: inset 4px 4px 0px rgba(0,0,0,0.05);
-        position: relative;
-        z-index: 2;
       }
 
-      .output-placeholder {
-        color: var(--muted);
-        font-style: normal;
+      .diagnosis-body strong,
+      .diagnosis-body b {
+        color: #e2e8f0;
+        font-weight: 600;
       }
 
-      /* INCIDENT FEED */
-      .incident-list {
+      .diagnosis-footer {
+        padding: 12px 20px;
+        border-top: 1px solid #2d3148;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #4b5563;
+        background: #13151f;
+      }
+
+      /* ── Loading spinner ── */
+      .loading-card {
+        background: #1a1d27;
+        border: 1px solid #2d3148;
+        border-radius: 12px;
+        padding: 32px 24px;
+      }
+      .loading-steps {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-        max-height: 450px;
-        overflow-y: auto;
-        padding-right: 1rem;
-        position: relative;
-        z-index: 2;
+        gap: 14px;
       }
-
-      .incident-item {
-        background: #fff;
-        border: 4px solid var(--border);
-        padding: 1.5rem;
-        box-shadow: 6px 6px 0px #000;
-        transition: transform 0.2s;
-      }
-
-      .incident-item:hover {
-        transform: translate(-3px, -3px);
-        box-shadow: 9px 9px 0px #000;
-      }
-
-      .incident-item.critical, .incident-item.high, .incident-item.medium {
-        border-left-width: 12px;
-        border-left-color: #000;
-      }
-
-      .incident-title {
-        font-size: 1.25rem;
-        font-weight: 800;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
-      }
-
-      .incident-meta {
+      .loading-step {
         display: flex;
-        gap: 1.25rem;
-        font-size: 0.95rem;
-        color: var(--muted);
-        font-weight: 800;
-        font-family: "JetBrains Mono", monospace;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: #6b7280;
       }
-
-      .badge {
-        padding: 0.35rem 1rem;
-        border: 3px solid var(--border);
-        font-size: 0.85rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        font-family: "JetBrains Mono", monospace;
-        box-shadow: 3px 3px 0px #000;
+      .loading-step.active {
+        color: #e2e8f0;
       }
-
-      .badge-critical, .badge-high, .badge-medium {
-        background: #fff;
-        color: #000;
+      .loading-step.done {
+        color: #22c55e;
       }
-
-      /* LOADING SPINNER */
-      .spinner {
-        display: inline-block;
+      .step-icon {
+        font-size: 16px;
         width: 20px;
-        height: 20px;
-        border: 4px solid #000;
-        border-top-color: transparent;
+        text-align: center;
+      }
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #2d3148;
+        border-top-color: #6c3de0;
         border-radius: 50%;
-        animation: spin 0.7s linear infinite;
+        animation: spin 0.8s linear infinite;
       }
-
-      .btn:hover .spinner {
-        border-color: #fff;
-        border-top-color: transparent;
-      }
-
       @keyframes spin {
         to {
           transform: rotate(360deg);
         }
       }
 
-      /* MEMORY BANK */
-      .memory-counter {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #fff;
-        border: 4px solid var(--border);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 6px 6px 0px #000;
-        position: relative;
-        z-index: 2;
-      }
-
-      .memory-count {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 4rem;
-        font-weight: 800;
-        color: var(--text);
-        line-height: 1;
-      }
-
-      .memory-label {
-        font-size: 1rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin-top: 0.75rem;
-        letter-spacing: 0.05em;
-      }
-
-      /* TOAST */
+      /* ── Toast ── */
       .toast {
         position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        background: #fff;
-        border: 4px solid #000;
-        color: #000;
-        padding: 1.25rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 800;
-        font-family: "Space Grotesk", sans-serif;
-        transform: translateY(150px);
+        bottom: 24px;
+        right: 24px;
+        background: #1e293b;
+        border: 1px solid #2d3148;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #e2e8f0;
         opacity: 0;
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: 999;
-        box-shadow: 8px 8px 0px #000;
-        text-transform: uppercase;
+        transform: translateY(8px);
+        transition: all 0.3s;
+        z-index: 100;
+        max-width: 320px;
       }
-
       .toast.show {
-        transform: translateY(0);
         opacity: 1;
+        transform: translateY(0);
       }
-
-      /* SCROLLBAR */
-      ::-webkit-scrollbar {
-        width: 14px;
+      .toast.error {
+        border-color: #ef4444;
+        color: #fca5a5;
       }
-      ::-webkit-scrollbar-track {
-        background: #fff;
-        border-left: 4px solid var(--border);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #000;
-        border: 3px solid #fff;
+      .toast.success {
+        border-color: #22c55e;
+        color: #86efac;
       }
     </style>
   </head>
   <body>
-    <!-- NAV -->
-    <nav>
-      <div class="logo">
-        <div class="logo-dot"></div>
-        INCIDENT RESPONSE AGENT
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-logo">🚨</div>
+        <div>
+          <div class="header-title">Incident Response Agent</div>
+          <div class="header-sub">Powered by Hindsight Memory</div>
+        </div>
       </div>
-      <div class="status-bar">
-        <div class="status-dot"></div>
-        HINDSIGHT MEMORY ACTIVE
-      </div>
-    </nav>
-
-    <!-- HERO -->
-    <div class="hero">
-      <h1>Production Down? <span>AI Remembers.</span></h1>
-      <p>
-        An SRE agent powered by Hindsight memory that recalls past incidents and
-        gets smarter with every outage.
-      </p>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-number" id="memoryCount">0</div>
-          <div class="stat-label">Memories Stored</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number" id="incidentCount">0</div>
-          <div class="stat-label">Incidents Diagnosed</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number">3</div>
-          <div class="stat-label">Memory Operations</div>
-        </div>
+      <div class="api-status">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Connecting...</span>
       </div>
     </div>
 
-    <!-- MAIN -->
-    <div class="container">
-      <!-- SEED MEMORY -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon">🧠</div>
-          <div>
-            <div class="card-title">Seed Memory Bank</div>
-            <div class="card-subtitle">Load past incidents into Hindsight</div>
-          </div>
-        </div>
-        <div class="memory-counter">
-          <div>
-            <div class="memory-count" id="seedCount">10</div>
-            <div class="memory-label">incidents ready to load</div>
-          </div>
-          <div style="font-size: 3rem">📂</div>
-        </div>
-        <button class="btn" id="seedBtn" onclick="seedMemory()">
-          🧠 Seed Incidents into Memory
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-label">Total incidents</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat">
+        <span class="badge badge-p1">P1</span>
+        <div class="stat-value" id="stat-p1">—</div>
+      </div>
+      <div class="stat">
+        <span class="badge badge-p2">P2</span>
+        <div class="stat-value" id="stat-p2">—</div>
+      </div>
+      <div class="stat">
+        <span class="badge badge-p3">P3</span>
+        <div class="stat-value" id="stat-p3">—</div>
+      </div>
+      <div class="stat" style="margin-left: auto">
+        <button class="btn-seed" id="seed-btn" onclick="seedMemory()">
+          🧠 Seed past incidents into memory
         </button>
-        <div
-          class="output-box"
-          id="seedOutput"
-          style="margin-top: 1.5rem; min-height: 80px"
-        >
-          <span class="output-placeholder"
-            >Click to load 10 past incidents into Hindsight memory...</span
-          >
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="layout">
+      <!-- Sidebar: history -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          Incident history
+          <button class="refresh-btn" onclick="loadHistory()" title="Refresh">
+            ↺
+          </button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="empty-history">
+            No incidents yet.<br />Diagnose your first incident to see history
+            here.
+          </div>
         </div>
       </div>
 
-      <!-- RECALL -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon">🔍</div>
-          <div>
-            <div class="card-title">Search Memory</div>
-            <div class="card-subtitle">Recall similar past incidents</div>
+      <!-- Main panel -->
+      <div class="main">
+        <!-- Input area -->
+        <div class="input-area">
+          <div class="input-label">Describe the incident</div>
+          <div class="input-row">
+            <textarea
+              id="incident-input"
+              rows="4"
+              placeholder="e.g. Kubernetes pods in CrashLoopBackOff after config map update. Payment service is down. Customers cannot checkout."
+            ></textarea>
+            <button class="btn-diagnose" id="diagnose-btn" onclick="diagnose()">
+              Diagnose
+            </button>
           </div>
         </div>
-        <textarea
-          id="recallInput"
-          placeholder="e.g. database connection timeout..."
-        ></textarea>
-        <button class="btn" onclick="recallMemory()">
-          🔍 Search Past Incidents
-        </button>
-        <div class="output-box" id="recallOutput" style="margin-top: 1.5rem">
-          <span class="output-placeholder"
-            >Similar past incidents will appear here...</span
-          >
-        </div>
-      </div>
 
-      <!-- DIAGNOSE -->
-      <div class="card full-width">
-        <div class="card-header">
-          <div class="card-icon">🚨</div>
-          <div>
-            <div class="card-title">Diagnose Incident</div>
-            <div class="card-subtitle">
-              AI-powered diagnosis using Hindsight memory
-            </div>
-          </div>
-        </div>
-        <textarea
-          id="diagnoseInput"
-          placeholder="Describe your incident here...&#10;&#10;e.g. Our Kubernetes pods for the payment service are all showing CrashLoopBackOff status after a config update 30 minutes ago..."
-          style="min-height: 180px"
-        ></textarea>
-        <button class="btn" onclick="diagnoseIncident()">
-          🚨 Diagnose with Memory
-        </button>
-        <div
-          class="output-box"
-          id="diagnoseOutput"
-          style="margin-top: 1.5rem; min-height: 200px"
-        >
-          <span class="output-placeholder"
-            >Your AI-powered diagnosis will appear here... The agent will: 1.
-            recall() → find similar past incidents 2. analyze → generate
-            targeted diagnosis 3. retain() → store this incident for future
-            use</span
-          >
-        </div>
-      </div>
-
-      <!-- PATTERNS -->
-      <div class="card full-width">
-        <div class="card-header">
-          <div class="card-icon">📊</div>
-          <div>
-            <div class="card-title">Reflect — Pattern Insights</div>
-            <div class="card-subtitle">
-              Synthesize patterns across all past incidents
-            </div>
-          </div>
-        </div>
-        <button
-          class="btn"
-          style="max-width: 350px"
-          onclick="getPatterns()"
-        >
-          📊 Generate Pattern Insights
-        </button>
-        <div
-          class="output-box"
-          id="patternsOutput"
-          style="margin-top: 1.5rem; min-height: 180px"
-        >
-          <span class="output-placeholder"
-            >Click to reflect on all past incidents and surface recurring
-            patterns...</span
-          >
-        </div>
-      </div>
-
-      <!-- INCIDENT FEED -->
-      <div class="card full-width">
-        <div class="card-header">
-          <div class="card-icon">📋</div>
-          <div>
-            <div class="card-title">Past Incident Feed</div>
-            <div class="card-subtitle">Knowledge base loaded into memory</div>
-          </div>
-        </div>
-        <div class="incident-list" id="incidentFeed">
-          <div
-            style="
-              color: var(--muted);
-              font-size: 1.1rem;
-              font-weight: 700;
-              text-align: center;
-              padding: 3rem;
-              border: 4px dashed var(--border);
-            "
-          >
-            SEED MEMORY TO SEE INCIDENT FEED...
+        <!-- Result area -->
+        <div class="result-area" id="result-area">
+          <div class="welcome">
+            <div class="welcome-icon">🧠</div>
+            <h2>Ready to diagnose</h2>
+            <p>
+              Describe a production incident above. The agent will recall
+              similar past incidents from memory and generate a targeted
+              diagnosis.
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <script>
       const API = "http://localhost:8000";
-      let diagnosedCount = 0;
 
-      function showToast(msg) {
+      // ── Toast ──────────────────────────────────────────────────────────────────
+      function showToast(msg, type = "") {
         const t = document.getElementById("toast");
         t.textContent = msg;
-        t.classList.add("show");
-        setTimeout(() => t.classList.remove("show"), 3000);
+        t.className = "toast show " + type;
+        setTimeout(() => {
+          t.className = "toast";
+        }, 3500);
       }
 
-      function setOutput(id, text, isError) {
-        const el = document.getElementById(id);
-        el.style.color = isError ? "#fff" : "#000";
-        el.style.backgroundColor = isError ? "#000" : "#f8f8f8";
-        el.textContent = text;
+      // ── Format timestamp ───────────────────────────────────────────────────────
+      function formatTime(iso) {
+        if (!iso) return "";
+        const d = new Date(iso);
+        return d.toLocaleString("en-IN", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
 
-      function setLoading(btnId, loading) {
-        const btn = document.getElementById(btnId);
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.innerHTML =
-          loading ?
-            '<span class="spinner"></span> PROCESSING...'
-          : btn.dataset.original || btn.innerHTML;
+      // ── Severity helpers ───────────────────────────────────────────────────────
+      function severityBadge(s) {
+        const map = {
+          P1: '<span class="badge badge-p1">P1</span>',
+          P2: '<span class="badge badge-p2">P2</span>',
+          P3: '<span class="badge badge-p3">P3</span>',
+        };
+        return map[s] || '<span class="badge badge-neutral">??</span>';
       }
 
-      const incidents = [
-        {
-          id: "INC001",
-          title: "Postgres DB connection timeout",
-          severity: "critical",
-          tags: ["database", "postgres"],
-        },
-        {
-          id: "INC002",
-          title: "High CPU on API server",
-          severity: "high",
-          tags: ["cpu", "api"],
-        },
-        {
-          id: "INC003",
-          title: "Redis cache memory full",
-          severity: "high",
-          tags: ["redis", "cache"],
-        },
-        {
-          id: "INC004",
-          title: "Kubernetes pod crash loop",
-          severity: "critical",
-          tags: ["kubernetes", "k8s"],
-        },
-        {
-          id: "INC005",
-          title: "SSL certificate expired",
-          severity: "critical",
-          tags: ["ssl", "nginx"],
-        },
-        {
-          id: "INC006",
-          title: "Disk space full on log server",
-          severity: "medium",
-          tags: ["disk", "logging"],
-        },
-        {
-          id: "INC007",
-          title: "S3 bucket access denied",
-          severity: "high",
-          tags: ["aws", "s3"],
-        },
-        {
-          id: "INC008",
-          title: "API rate limit third-party",
-          severity: "medium",
-          tags: ["api", "rate-limit"],
-        },
-        {
-          id: "INC009",
-          title: "Docker image pull failing",
-          severity: "high",
-          tags: ["docker", "cicd"],
-        },
-        {
-          id: "INC010",
-          title: "Memory leak in Node.js",
-          severity: "high",
-          tags: ["nodejs", "memory"],
-        },
-      ];
+      // ── API health check ───────────────────────────────────────────────────────
+      async function checkHealth() {
+        try {
+          const res = await fetch(API + "/health", {
+            signal: AbortSignal.timeout(3000),
+          });
+          if (res.ok) {
+            document.getElementById("status-dot").classList.add("online");
+            document.getElementById("status-text").textContent = "API online";
+            return true;
+          }
+        } catch {}
+        document.getElementById("status-dot").classList.remove("online");
+        document.getElementById("status-text").textContent = "API offline";
+        return false;
+      }
 
-      function renderIncidentFeed() {
-        const feed = document.getElementById("incidentFeed");
-        feed.innerHTML = incidents
-          .map(
-            (inc) => `
-      <div class="incident-item ${inc.severity}">
-        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 0.5rem">
-          <div class="incident-title">${inc.title}</div>
-          <span class="badge badge-${inc.severity}">${inc.severity}</span>
+      // ── Load stats ─────────────────────────────────────────────────────────────
+      async function loadStats() {
+        try {
+          const res = await fetch(API + "/stats");
+          const data = await res.json();
+          document.getElementById("stat-total").textContent = data.total;
+          document.getElementById("stat-p1").textContent = data.p1;
+          document.getElementById("stat-p2").textContent = data.p2;
+          document.getElementById("stat-p3").textContent = data.p3;
+        } catch {}
+      }
+
+      // ── Load history sidebar ───────────────────────────────────────────────────
+      async function loadHistory() {
+        try {
+          const res = await fetch(API + "/history");
+          const data = await res.json();
+          const list = document.getElementById("history-list");
+
+          if (!data.incidents || data.incidents.length === 0) {
+            list.innerHTML =
+              '<div class="empty-history">No incidents yet.<br>Diagnose your first incident to see history here.</div>';
+            return;
+          }
+
+          list.innerHTML = data.incidents
+            .map(
+              (inc) => `
+        <div class="history-item" onclick="showHistoryItem(${JSON.stringify(inc).replace(/"/g, "&quot;")})">
+          <div class="history-item-top">
+            <span class="history-id">${inc.id}</span>
+            ${severityBadge(inc.severity)}
+            <span class="history-time">${formatTime(inc.timestamp)}</span>
+          </div>
+          <div class="history-desc">${inc.description}</div>
+          <div class="history-runbook">📋 ${inc.runbook_used || "General runbook"}</div>
         </div>
-        <div class="incident-meta">
-          <span>${inc.id}</span>
-          <span>${inc.tags.join(" · ")}</span>
+      `,
+            )
+            .join("");
+        } catch {
+          // silently fail — API might not be running yet
+        }
+      }
+
+      // ── Show a past incident from sidebar ─────────────────────────────────────
+      function showHistoryItem(inc) {
+        document
+          .querySelectorAll(".history-item")
+          .forEach((el) => el.classList.remove("active"));
+        event.currentTarget.classList.add("active");
+        renderDiagnosis({
+          id: inc.id,
+          severity: inc.severity,
+          incident: inc.description,
+          diagnosis: inc.diagnosis,
+          timestamp: inc.timestamp,
+          runbook_used: inc.runbook_used,
+          fromHistory: true,
+        });
+      }
+
+      // ── Seed memory ───────────────────────────────────────────────────────────
+      async function seedMemory() {
+        const btn = document.getElementById("seed-btn");
+        btn.textContent = "⏳ Seeding...";
+        btn.disabled = true;
+        try {
+          const res = await fetch(API + "/seed", { method: "POST" });
+          const data = await res.json();
+          showToast("✅ Past incidents seeded into memory!", "success");
+        } catch {
+          showToast("❌ Could not reach API. Is the server running?", "error");
+        } finally {
+          btn.textContent = "🧠 Seed past incidents into memory";
+          btn.disabled = false;
+        }
+      }
+
+      // ── Diagnose ──────────────────────────────────────────────────────────────
+      async function diagnose() {
+        const description = document
+          .getElementById("incident-input")
+          .value.trim();
+        if (!description) {
+          showToast("Please describe the incident first.", "error");
+          return;
+        }
+
+        const btn = document.getElementById("diagnose-btn");
+        btn.textContent = "Analyzing...";
+        btn.disabled = true;
+
+        // Show loading state
+        showLoading();
+
+        try {
+          const res = await fetch(API + "/diagnose", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ description }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Unknown error");
+          }
+
+          const data = await res.json();
+          renderDiagnosis({
+            id: data.id,
+            severity: data.severity,
+            incident: data.incident,
+            diagnosis: data.diagnosis,
+            timestamp: new Date().toISOString(),
+          });
+
+          // Refresh sidebar and stats
+          await loadHistory();
+          await loadStats();
+          showToast(
+            `✅ Diagnosis complete — ${data.id} [${data.severity}]`,
+            "success",
+          );
+        } catch (e) {
+          showError(e.message);
+          showToast("❌ " + e.message, "error");
+        } finally {
+          btn.textContent = "Diagnose";
+          btn.disabled = false;
+        }
+      }
+
+      // ── Show loading state ────────────────────────────────────────────────────
+      function showLoading() {
+        document.getElementById("result-area").innerHTML = `
+      <div class="loading-card">
+        <div class="loading-steps">
+          <div class="loading-step active">
+            <div class="spinner"></div>
+            <span>Classifying severity...</span>
+          </div>
+          <div class="loading-step">
+            <div class="step-icon">🔍</div>
+            <span>Recalling similar past incidents from Hindsight memory...</span>
+          </div>
+          <div class="loading-step">
+            <div class="step-icon">📋</div>
+            <span>Selecting best-match runbook...</span>
+          </div>
+          <div class="loading-step">
+            <div class="step-icon">🤖</div>
+            <span>Generating AI diagnosis...</span>
+          </div>
+          <div class="loading-step">
+            <div class="step-icon">💾</div>
+            <span>Storing in memory for future recall...</span>
+          </div>
         </div>
       </div>
-    `,
-          )
-          .join("");
+    `;
+
+        // Animate loading steps
+        const steps = document.querySelectorAll(".loading-step");
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i > 0) {
+            steps[i - 1].classList.remove("active");
+            steps[i - 1].classList.add("done");
+            steps[i - 1].querySelector(".step-icon, .spinner").textContent =
+              "✓";
+          }
+          if (i < steps.length) {
+            steps[i].classList.add("active");
+            i++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 900);
       }
 
-      async function seedMemory() {
-        const btn = document.getElementById("seedBtn");
-        if (!btn.dataset.original) btn.dataset.original = btn.innerHTML;
-        setLoading("seedBtn", true);
-        setOutput(
-          "seedOutput",
-          "CONNECTING TO HINDSIGHT CLOUD AND SEEDING 10 INCIDENTS...",
-        );
+      // ── Render diagnosis result ───────────────────────────────────────────────
+      function renderDiagnosis(data) {
+        const severityClass = (data.severity || "P2").toLowerCase();
+        const formattedDiagnosis = (data.diagnosis || "")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/^(\d+\.)/gm, "<br><strong>$1</strong>");
 
-        try {
-          const res = await fetch(`${API}/seed`, { method: "POST" });
-          const data = await res.json();
-          setOutput(
-            "seedOutput",
-            "✅ ALL 10 INCIDENTS SEEDED INTO HINDSIGHT MEMORY!\n\n" +
-              incidents.map((i) => `✅ ${i.id}: ${i.title}`).join("\n"),
-          );
-          document.getElementById("memoryCount").textContent = "10+";
-          renderIncidentFeed();
-          showToast("✅ MEMORY BANK SEEDED SUCCESSFULLY!");
-        } catch (e) {
-          setOutput(
-            "seedOutput",
-            "❌ COULD NOT CONNECT TO API.\nMAKE SURE FASTAPI IS RUNNING:\n\ncd api\nuvicorn main:app --reload --port 8000",
-            true,
-          );
-        }
-
-        setLoading("seedBtn", false);
-        btn.innerHTML = "✅ MEMORY SEEDED — SEED AGAIN";
+        document.getElementById("result-area").innerHTML = `
+      <div class="diagnosis-card">
+        <div class="diagnosis-header ${severityClass}">
+          <span class="diag-id">${data.id || "DIAGNOSIS"}</span>
+          ${severityBadge(data.severity)}
+          <span class="diag-severity-label">${
+            data.severity === "P1" ? "Critical — production down"
+            : data.severity === "P2" ? "Major — significant degradation"
+            : "Minor — workaround available"
+          }</span>
+          <span class="diag-time">${formatTime(data.timestamp)}</span>
+        </div>
+        <div class="diagnosis-incident">
+          <span>Incident description</span>
+          ${data.incident}
+        </div>
+        <div class="diagnosis-body">${formattedDiagnosis}</div>
+        <div class="diagnosis-footer">
+          📋 ${data.runbook_used || "Runbook applied"}
+          &nbsp;·&nbsp;
+          🧠 Recalled from Hindsight memory
+          ${data.fromHistory ? "&nbsp;·&nbsp; 📜 Viewing past incident" : ""}
+        </div>
+      </div>
+    `;
       }
 
-      async function recallMemory() {
-        const query = document.getElementById("recallInput").value.trim();
-        if (!query) {
-          showToast("⚠️ ENTER A SEARCH QUERY FIRST");
-          return;
-        }
-        setOutput("recallOutput", "🔍 SEARCHING HINDSIGHT MEMORY...");
-
-        try {
-          const res = await fetch(`${API}/recall`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query }),
-          });
-          const data = await res.json();
-          setOutput(
-            "recallOutput",
-            data.memories || "NO SIMILAR INCIDENTS FOUND.",
-          );
-          showToast("🔍 MEMORY RECALL COMPLETE!");
-        } catch (e) {
-          setOutput(
-            "recallOutput",
-            "❌ API NOT REACHABLE. START FASTAPI FIRST.",
-            true,
-          );
-        }
+      // ── Show error ────────────────────────────────────────────────────────────
+      function showError(msg) {
+        document.getElementById("result-area").innerHTML = `
+      <div class="diagnosis-card">
+        <div class="diagnosis-header p1">
+          <span class="diag-id">ERROR</span>
+          <span class="badge badge-p1">FAILED</span>
+        </div>
+        <div class="diagnosis-body" style="color:#fca5a5;">
+          ❌ ${msg || "Could not reach the API."}<br><br>
+          Make sure the FastAPI server is running:<br>
+          <code style="background:#13151f;padding:6px 10px;border-radius:4px;display:inline-block;margin-top:8px;font-size:13px;">
+            cd api &amp;&amp; uvicorn main:app --reload --port 8000
+          </code>
+        </div>
+      </div>
+    `;
       }
 
-      async function diagnoseIncident() {
-        const desc = document.getElementById("diagnoseInput").value.trim();
-        if (!desc) {
-          showToast("⚠️ DESCRIBE THE INCIDENT FIRST");
-          return;
-        }
-        setOutput(
-          "diagnoseOutput",
-          "🔍 STEP 1: RECALLING SIMILAR PAST INCIDENTS FROM MEMORY...\n⏳ PLEASE WAIT...",
-        );
+      // ── Enter key to submit ────────────────────────────────────────────────────
+      document
+        .getElementById("incident-input")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && e.ctrlKey) diagnose();
+        });
 
-        try {
-          const res = await fetch(`${API}/diagnose`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ description: desc }),
-          });
-          const data = await res.json();
-          diagnosedCount++;
-          document.getElementById("incidentCount").textContent = diagnosedCount;
-          setOutput(
-            "diagnoseOutput",
-            "📋 DIAGNOSIS REPORT\n" + "─".repeat(40) + "\n\n" + data.diagnosis,
-          );
-          showToast("✅ DIAGNOSIS COMPLETE — STORED IN MEMORY!");
-        } catch (e) {
-          setOutput(
-            "diagnoseOutput",
-            "❌ API NOT REACHABLE. START FASTAPI FIRST:\n\ncd api\nuvicorn main:app --reload --port 8000",
-            true,
-          );
-        }
+      // ── Init ──────────────────────────────────────────────────────────────────
+      async function init() {
+        await checkHealth();
+        await loadStats();
+        await loadHistory();
+        // Re-check health every 10 seconds
+        setInterval(checkHealth, 10000);
       }
 
-      async function getPatterns() {
-        setOutput(
-          "patternsOutput",
-          "🧠 REFLECTING ON ALL PAST INCIDENTS...\n⏳ THIS MAY TAKE 15-30 SECONDS...",
-        );
-
-        try {
-          const res = await fetch(`${API}/patterns`);
-          const data = await res.json();
-          setOutput(
-            "patternsOutput",
-            "📊 PATTERN INSIGHTS\n" + "─".repeat(40) + "\n\n" + data.patterns,
-          );
-          showToast("📊 PATTERN ANALYSIS COMPLETE!");
-        } catch (e) {
-          setOutput(
-            "patternsOutput",
-            "❌ API NOT REACHABLE. START FASTAPI FIRST.",
-            true,
-          );
-        }
-      }
+      init();
     </script>
   </body>
 </html>
